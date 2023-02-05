@@ -30,7 +30,7 @@ func (h *Handler) CreateUser() gin.HandlerFunc {
 		defer cancel()
 
 		// Hash the password
-		password := []byte("secret-password")
+		password := []byte(user.Password)
 		hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -41,7 +41,7 @@ func (h *Handler) CreateUser() gin.HandlerFunc {
 
 		// Save the user to the MongoDB databaseh.dbConnection.GetUsers()
 		collection := h.dbConnection.GetUsers()
-		_, err = collection.InsertOne(ctx, bson.M{"id": user.ID, "email": user.Email, "password": hashedPassword})
+		_, err = collection.InsertOne(ctx, bson.M{"email": user.Email, "password": hashedPassword})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Error creating user",

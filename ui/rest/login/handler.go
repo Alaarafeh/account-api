@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtKey = []byte("secret_key")
@@ -37,9 +38,21 @@ func (h *Handler) GetCredential() gin.HandlerFunc {
 		// Check if the email and password match a user in the MongoDB database
 		collection := h.dbConnection.GetUsers()
 		var result models.User
-		err := collection.FindOne(ctx,  bson.M{"email": user.Email, "password": user.Password}).Decode(&result)
-		log.Println(err)
+
+		err := collection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&result)
+
 		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Invalid email or password",
+			})
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password))
+		
+		log.Println(result.Password)
+
+		if err !=  nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Invalid email or password",
 			})
