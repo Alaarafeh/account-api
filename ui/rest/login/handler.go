@@ -49,8 +49,6 @@ func (h *Handler) GetCredential() gin.HandlerFunc {
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password))
-		
-		log.Println(result.Password)
 
 		if err !=  nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -65,15 +63,19 @@ func (h *Handler) GetCredential() gin.HandlerFunc {
 			 ExpiresAt: expirationTime.Unix(),
 			 Subject:   user.Email,
 		 }
+		 
 		 token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		 tokenString, err := token.SignedString(jwtKey)
 		 log.Println(tokenString)
+		
 		 if err != nil {
 			c.JSON(http.StatusInternalServerError, "Failed to sign token")
 			 return
 		 }
 
 		 c.SetCookie("token", tokenString, int(time.Hour/time.Second), "/", "localhost", false, true)
-		 c.JSON(http.StatusOK, "Cookie set")
+		 
+		 c.Header("Access-Control-Allow-Origin","*")
+		 c.JSON(http.StatusOK, gin.H{"token": tokenString})
 	}
 }
