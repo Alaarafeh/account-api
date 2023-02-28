@@ -49,7 +49,7 @@ func (h *Handler) CreateUser() gin.HandlerFunc {
 			})
 			return
 		}
-
+		c.Header("Access-Control-Allow-Origin","*")
 		c.JSON(http.StatusOK, gin.H{
 			"message": "User created successfully!",
 		})
