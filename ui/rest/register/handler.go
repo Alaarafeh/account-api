@@ -29,6 +29,14 @@ func (h *Handler) CreateUser() gin.HandlerFunc {
 		c.BindJSON(&user)
 		defer cancel()
 
+		// check if user is null
+		if user.Email == "" || user.Password == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Error User or Password cannot be empty",
+			})
+			return
+		} 
+
 		// Hash the password
 		password := []byte(user.Password)
 		hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
